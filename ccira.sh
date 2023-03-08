@@ -27,7 +27,8 @@ psql $DATABASE_URL -f sql/nuseds_top10.sql
 psql $DATABASE_URL -f sql/model.sql
 
 # dump to file
-mkdir -p outputs
+rm -rf outputs
+mkdir outputs
 
 echo 'dumping streams'
 ogr2ogr \
@@ -108,7 +109,7 @@ ogr2ogr \
        watershed_group_code,
        total_network_km,
        geom
-        from bcfishpass.barriers_ct_dv_rb_"
+        from bcfishpass.barriers_ct_dv_rb"
 
 echo 'dumping observations'
 ogr2ogr \
@@ -119,4 +120,21 @@ ogr2ogr \
     PG:$DATABASE_URL \
     -nln observations \
     -nlt PointZM \
-    -sql "bcfishpass.observations_vw"
+    -sql "select
+             fish_observation_point_id,
+             fish_obsrvtn_event_id,
+             linear_feature_id,
+             blue_line_key,
+             wscode_ltree as wscode,
+             localcode_ltree as localcode,
+             downstream_route_measure,
+             watershed_group_code,
+             species_code,
+             observation_date,
+             activity_code,
+             activity,
+             life_stage_code,
+             life_stage,
+             acat_report_url,
+             geom
+           from bcfishpass.observations_vw"
