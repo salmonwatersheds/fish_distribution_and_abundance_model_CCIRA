@@ -77,9 +77,11 @@ Install the following tools (for the March 2023 deliverable, the noted versions 
         ./ccira.sh
 
 
-## Data definition
+## Data definitions
 
-| COLUMN NAME                 | TYPE                        | DESCRIPTION |
+#### `fish_distribution_model`
+
+| Column                 | Type                        | Description |
 | --------------------------- | --------------------------- | ----------- |
 | segmented_stream_id           | text                        | internal bcfishpass unique stream segment id
 | linear_feature_id             | bigint                      | FWA stream segment identifier
@@ -123,3 +125,46 @@ Install the following tools (for the March 2023 deliverable, the noted versions 
 | fishyness_sel                 | text                        | Fishyness index, SEL
 | fishyness_ser                 | text                        | Fishyness index, SER
 | geom                          | geometry(LineStringZM,3005) | Stream segment geometry
+
+
+
+#### `barriers_salmon`/`barriers_steelhead`/`barriers_resident`
+
+|           Column           |         Type         | Description |
+|----------------------------|----------------------|------------|
+| barriers_<species>_id | text                 | unique identifier           |
+| barrier_type               | text                 | Natural barrier type (falls, gradient barrier, etc)           |
+| barrier_name               | text                 | Name of barrier, where applicable           |
+| linear_feature_id          | integer              | See FWA documentation           |
+| blue_line_key              | integer              | See FWA documentation           |
+| watershed_key              | integer              | See FWA documentation           |
+| downstream_route_measure   | double precision     | See FWA documentation           |
+| wscode                     | ltree                | Abbreviated version of source FWA watershed code           |
+| localcode                  | ltree                | Abbreviated version of source local watershed code           |
+| watershed_group_code       | character varying(4) | See FWA documentation           |
+| total_network_km           | double precision     | Total length of stream upstream of barrier, useful for barrier QA           |
+| geom                       | geometry(Point,3005) | Geometry           |
+
+
+### observations
+
+From [Known Fish Observations](https://catalogue.data.gov.bc.ca/dataset/known-bc-fish-observations-and-bc-fish-distributions)
+
+|          Column           |          Type          | Description                                                   |
+|---------------------------|------------------------|-----------                                                    |
+| fish_observation_point_id | integer                | DataBC provided unique ID (does not remain constant over time)|
+| fish_obsrvtn_event_id     | bigint                 | bcfishpass internal unique id                                 |
+| linear_feature_id         | bigint                 | See FWA documentation                                         |
+| blue_line_key             | integer                | See FWA documentation                                         |
+| wscode_ltree              | ltree                  | Abbreviated version of source FWA watershed code              |
+| localcode_ltree           | ltree                  | Abbreviated version of source FWA watershed code              |
+| downstream_route_measure  | double precision       | See FWA documentation                                         |
+| watershed_group_code      | character varying(4)   | See FWA documentation                                         |
+| species_code              | text                   | See observation documentation                                 |
+| observation_date          | date                   | See observation documentation                                 |
+| activity_code             | character varying(100) | See observation documentation                                 |
+| activity                  | character varying(300) | See observation documentation                                 |
+| life_stage_code           | character varying(100) | See observation documentation                                 |
+| life_stage                | character varying(300) | See observation documentation                                 |
+| acat_report_url           | character varying(254) | See observation documentation                                 |
+| geom                      | geometry(PointZM,3005) | Geometry                                                      |
