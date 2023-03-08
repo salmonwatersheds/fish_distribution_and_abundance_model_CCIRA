@@ -14,14 +14,14 @@ with access as (
     s.stream_magnitude,
     ua.upstream_area_ha,
     s.watershed_group_code,
-    
+    s.gnis_name,
     -- translate barrier columns to string for easy export
     wscode_ltree::text as wscode,
     localcode_ltree::text as localcode,
-    array_to_string(barriers_ch_cm_co_pk_sk_dnstr,'; ') as barriers_ch_cm_co_pk_sk_dnstr,
-    array_to_string(barriers_ct_dv_rb_dnstr,'; ') as barriers_ct_dv_rb_dnstr,
-    array_to_string(obsrvtn_species_codes_upstr,'; ') as obsrvtn_species_codes_upstr,
-    array_to_string(species_codes_dnstr,'; ') as species_codes_dnstr,
+    barriers_ch_cm_co_pk_sk_dnstr,
+    barriers_ct_dv_rb_dnstr,
+    obsrvtn_species_codes_upstr,
+    species_codes_dnstr,
     -- anadromous models
     case 
     when obsrvtn_species_codes_upstr && array['CH'] then 'KNOWN'  
@@ -128,46 +128,275 @@ with access as (
   where watershed_group_code in ('ATNA','BELA','KHTZ','KITL','KLIN','KTSU','LDEN','LRDO','NASC','NECL','NIEL','OWIK')
 )
 
+-- add abundance model
 select 
-  segmented_stream_id,
-  linear_feature_id,
-  blue_line_key,
-  edge_type,
-  downstream_route_measure,
-  upstream_route_measure,
-  wscode,
-  localcode,
-  stream_order,
-  stream_magnitude,
-  upstream_area_ha,
-  barriers_ch_cm_co_pk_sk_dnstr,
-  barriers_ct_dv_rb_dnstr,
-  obsrvtn_species_codes_upstr,
-  species_codes_dnstr,
-  model_ch,
-  model_cm,
-  model_co,
-  model_pk,
-  model_sk,
-  model_st,
-  model_ct,
-  model_dv,
-  model_rb,
+  a.segmented_stream_id,
+  a.linear_feature_id,
+  a.blue_line_key,
+  a.edge_type,
+  a.downstream_route_measure,
+  a.upstream_route_measure,
+  a.gnis_name,
+  a.wscode,
+  a.localcode,
+  a.stream_order,
+  a.stream_magnitude,
+  a.upstream_area_ha,
+  array_to_string(a.barriers_ch_cm_co_pk_sk_dnstr,'; ') as barriers_ch_cm_co_pk_sk_dnstr,
+  array_to_string(a.barriers_ct_dv_rb_dnstr,'; ') as barriers_ct_dv_rb_dnstr,
+  array_to_string(a.obsrvtn_species_codes_upstr,'; ') as obsrvtn_species_codes_upstr,
+  array_to_string(a.species_codes_dnstr,'; ') as species_codes_dnstr,
+  a.model_ch,
+  a.model_cm,
+  a.model_co,
+  a.model_pk,
+  a.model_sk,
+  a.model_st,
+  a.model_ct,
+  a.model_dv,
+  a.model_rb,
+  b.cm as nuseds_top10_cm,
+  b.cn as nuseds_top10_cn,
+  b.co as nuseds_top10_co,
+  b.pke as nuseds_top10_pke,
+  b.pko as nuseds_top10_pko,
+  b.sel as nuseds_top10_sel,
+  b.ser as nuseds_top10_ser,
   case 
-    when barriers_ch_cm_co_pk_sk_dnstr = array[]::text[]
-    and stream_magnitude < 5 then "FEW_SALMON"
-    when barriers_ch_cm_co_pk_sk_dnstr = array[]::text[]
-    and stream_magnitude >= 5 
-    and stream_magnitude < 40 then "SOME_SALMON"
-    when barriers_ch_cm_co_pk_sk_dnstr = array[]::text[] 
-    and stream_magnitude >= 40 then "MANY_SALMON"
-    when barriers_ch_cm_co_pk_sk_dnstr != array[]::text[] 
-    and barriers_ct_dv_rb_dnstr = array[]::text[] then 'RESIDENT_FISH_ONLY'
-    when barriers_ch_cm_co_pk_sk_dnstr != array[]::text[] 
-    and barriers_ct_dv_rb_dnstr != array[]::text[] 
-    and edge_type not in (1100, 1200, 1350, 1410, 1425, 1450) then 'RESIDENT_FISH_ONLY_BARRIER_DNSTR' 
-  end as fishyness_class,
+    when
+      a.barriers_ch_cm_co_pk_sk_dnstr = array[]::text[]
+      and a.stream_magnitude < 5
+    then 'FEW_SALMON'
+    when
+      a.barriers_ch_cm_co_pk_sk_dnstr = array[]::text[]
+      and a.stream_magnitude >= 5
+      and a.stream_magnitude < 40
+    then 'SOME_SALMON'
+    when
+      a.barriers_ch_cm_co_pk_sk_dnstr = array[]::text[]
+      and a.stream_magnitude >= 40
+    then 'MANY_SALMON'
+    when
+      a.barriers_ch_cm_co_pk_sk_dnstr != array[]::text[]
+      and a.barriers_ct_dv_rb_dnstr = array[]::text[]
+    then 'RESIDENT_FISH_ONLY'
+    when
+      a.barriers_ch_cm_co_pk_sk_dnstr != array[]::text[]
+      and a.barriers_ct_dv_rb_dnstr != array[]::text[]
+      and a.edge_type not in (1100, 1200, 1350, 1410, 1425, 1450)
+    then 'RESIDENT_FISH_ONLY_BARRIER_DNSTR'
+  end as fishyness_magnitude,
+  case
+    when
+      a.barriers_ch_cm_co_pk_sk_dnstr = array[]::text[]
+      and a.stream_magnitude < 5
+    then 'FEW_SALMON'
+    when
+      a.barriers_ch_cm_co_pk_sk_dnstr = array[]::text[]
+      and a.stream_magnitude >= 5
+      and a.stream_magnitude < 40
+    then 'SOME_SALMON'
+    when
+      a.barriers_ch_cm_co_pk_sk_dnstr = array[]::text[]
+      and a.stream_magnitude >= 40
+    then 'MANY_SALMON'
+    when b.cm is true or b.cn is true or b.co is true or b.pke is true or b.pko is true or b.sel is true or b.ser is true
+    then 'MOST_SALMON'
+    when
+      a.barriers_ch_cm_co_pk_sk_dnstr != array[]::text[]
+      and a.barriers_ct_dv_rb_dnstr = array[]::text[]
+    then 'RESIDENT_FISH_ONLY'
+    when
+      a.barriers_ch_cm_co_pk_sk_dnstr != array[]::text[]
+      and a.barriers_ct_dv_rb_dnstr != array[]::text[]
+      and a.edge_type not in (1100, 1200, 1350, 1410, 1425, 1450)
+    then 'RESIDENT_FISH_ONLY_BARRIER_DNSTR'
+  end as fishyness_salmon,
+  case
+    when
+      a.barriers_ch_cm_co_pk_sk_dnstr = array[]::text[]
+      and a.stream_magnitude < 5
+    then 'FEW_SALMON'
+    when
+      a.barriers_ch_cm_co_pk_sk_dnstr = array[]::text[]
+      and a.stream_magnitude >= 5
+      and a.stream_magnitude < 40
+    then 'SOME_SALMON'
+    when
+      a.barriers_ch_cm_co_pk_sk_dnstr = array[]::text[]
+      and a.stream_magnitude >= 40
+    then 'MANY_SALMON'
+    when b.cm is true
+    then 'MOST_SALMON'
+    when
+      a.barriers_ch_cm_co_pk_sk_dnstr != array[]::text[]
+      and a.barriers_ct_dv_rb_dnstr = array[]::text[]
+    then 'RESIDENT_FISH_ONLY'
+    when
+      a.barriers_ch_cm_co_pk_sk_dnstr != array[]::text[]
+      and a.barriers_ct_dv_rb_dnstr != array[]::text[]
+      and a.edge_type not in (1100, 1200, 1350, 1410, 1425, 1450)
+    then 'RESIDENT_FISH_ONLY_BARRIER_DNSTR'
+  end as fishyness_cm,
+  case
+    when
+      a.barriers_ch_cm_co_pk_sk_dnstr = array[]::text[]
+      and a.stream_magnitude < 5
+    then 'FEW_SALMON'
+    when
+      a.barriers_ch_cm_co_pk_sk_dnstr = array[]::text[]
+      and a.stream_magnitude >= 5
+      and a.stream_magnitude < 40
+    then 'SOME_SALMON'
+    when
+      a.barriers_ch_cm_co_pk_sk_dnstr = array[]::text[]
+      and a.stream_magnitude >= 40
+    then 'MANY_SALMON'
+    when b.cn is true
+    then 'MOST_SALMON'
+    when
+      a.barriers_ch_cm_co_pk_sk_dnstr != array[]::text[]
+      and a.barriers_ct_dv_rb_dnstr = array[]::text[]
+    then 'RESIDENT_FISH_ONLY'
+    when
+      a.barriers_ch_cm_co_pk_sk_dnstr != array[]::text[]
+      and a.barriers_ct_dv_rb_dnstr != array[]::text[]
+      and a.edge_type not in (1100, 1200, 1350, 1410, 1425, 1450)
+    then 'RESIDENT_FISH_ONLY_BARRIER_DNSTR'
+  end as fishyness_cn,
+  case
+    when
+      a.barriers_ch_cm_co_pk_sk_dnstr = array[]::text[]
+      and a.stream_magnitude < 5
+    then 'FEW_SALMON'
+    when
+      a.barriers_ch_cm_co_pk_sk_dnstr = array[]::text[]
+      and a.stream_magnitude >= 5
+      and a.stream_magnitude < 40
+    then 'SOME_SALMON'
+    when
+      a.barriers_ch_cm_co_pk_sk_dnstr = array[]::text[]
+      and a.stream_magnitude >= 40
+    then 'MANY_SALMON'
+    when b.co is true
+    then 'MOST_SALMON'
+    when
+      a.barriers_ch_cm_co_pk_sk_dnstr != array[]::text[]
+      and a.barriers_ct_dv_rb_dnstr = array[]::text[]
+    then 'RESIDENT_FISH_ONLY'
+    when
+      a.barriers_ch_cm_co_pk_sk_dnstr != array[]::text[]
+      and a.barriers_ct_dv_rb_dnstr != array[]::text[]
+      and a.edge_type not in (1100, 1200, 1350, 1410, 1425, 1450)
+    then 'RESIDENT_FISH_ONLY_BARRIER_DNSTR'
+  end as fishyness_co,
+  case
+    when
+      a.barriers_ch_cm_co_pk_sk_dnstr = array[]::text[]
+      and a.stream_magnitude < 5
+    then 'FEW_SALMON'
+    when
+      a.barriers_ch_cm_co_pk_sk_dnstr = array[]::text[]
+      and a.stream_magnitude >= 5
+      and a.stream_magnitude < 40
+    then 'SOME_SALMON'
+    when
+      a.barriers_ch_cm_co_pk_sk_dnstr = array[]::text[]
+      and a.stream_magnitude >= 40
+    then 'MANY_SALMON'
+    when b.pke is true
+    then 'MOST_SALMON'
+    when
+      a.barriers_ch_cm_co_pk_sk_dnstr != array[]::text[]
+      and a.barriers_ct_dv_rb_dnstr = array[]::text[]
+    then 'RESIDENT_FISH_ONLY'
+    when
+      a.barriers_ch_cm_co_pk_sk_dnstr != array[]::text[]
+      and a.barriers_ct_dv_rb_dnstr != array[]::text[]
+      and a.edge_type not in (1100, 1200, 1350, 1410, 1425, 1450)
+    then 'RESIDENT_FISH_ONLY_BARRIER_DNSTR'
+  end as fishyness_pke,
+  case
+    when
+      a.barriers_ch_cm_co_pk_sk_dnstr = array[]::text[]
+      and a.stream_magnitude < 5
+    then 'FEW_SALMON'
+    when
+      a.barriers_ch_cm_co_pk_sk_dnstr = array[]::text[]
+      and a.stream_magnitude >= 5
+      and a.stream_magnitude < 40
+    then 'SOME_SALMON'
+    when
+      a.barriers_ch_cm_co_pk_sk_dnstr = array[]::text[]
+      and a.stream_magnitude >= 40
+    then 'MANY_SALMON'
+    when b.pko is true
+    then 'MOST_SALMON'
+    when
+      a.barriers_ch_cm_co_pk_sk_dnstr != array[]::text[]
+      and a.barriers_ct_dv_rb_dnstr = array[]::text[]
+    then 'RESIDENT_FISH_ONLY'
+    when
+      a.barriers_ch_cm_co_pk_sk_dnstr != array[]::text[]
+      and a.barriers_ct_dv_rb_dnstr != array[]::text[]
+      and a.edge_type not in (1100, 1200, 1350, 1410, 1425, 1450)
+    then 'RESIDENT_FISH_ONLY_BARRIER_DNSTR'
+  end as fishyness_pko,
+  case
+    when
+      a.barriers_ch_cm_co_pk_sk_dnstr = array[]::text[]
+      and a.stream_magnitude < 5
+    then 'FEW_SALMON'
+    when
+      a.barriers_ch_cm_co_pk_sk_dnstr = array[]::text[]
+      and a.stream_magnitude >= 5
+      and a.stream_magnitude < 40
+    then 'SOME_SALMON'
+    when
+      a.barriers_ch_cm_co_pk_sk_dnstr = array[]::text[]
+      and a.stream_magnitude >= 40
+    then 'MANY_SALMON'
+    when b.sel is true
+    then 'MOST_SALMON'
+    when
+      a.barriers_ch_cm_co_pk_sk_dnstr != array[]::text[]
+      and a.barriers_ct_dv_rb_dnstr = array[]::text[]
+    then 'RESIDENT_FISH_ONLY'
+    when
+      a.barriers_ch_cm_co_pk_sk_dnstr != array[]::text[]
+      and a.barriers_ct_dv_rb_dnstr != array[]::text[]
+      and a.edge_type not in (1100, 1200, 1350, 1410, 1425, 1450)
+    then 'RESIDENT_FISH_ONLY_BARRIER_DNSTR'
+  end as fishyness_sel,
+  case
+    when
+      a.barriers_ch_cm_co_pk_sk_dnstr = array[]::text[]
+      and a.stream_magnitude < 5
+    then 'FEW_SALMON'
+    when
+      a.barriers_ch_cm_co_pk_sk_dnstr = array[]::text[]
+      and a.stream_magnitude >= 5
+      and a.stream_magnitude < 40
+    then 'SOME_SALMON'
+    when
+      a.barriers_ch_cm_co_pk_sk_dnstr = array[]::text[]
+      and a.stream_magnitude >= 40
+    then 'MANY_SALMON'
+    when b.ser is true
+    then 'MOST_SALMON'
+    when
+      a.barriers_ch_cm_co_pk_sk_dnstr != array[]::text[]
+      and a.barriers_ct_dv_rb_dnstr = array[]::text[]
+    then 'RESIDENT_FISH_ONLY'
+    when
+      a.barriers_ch_cm_co_pk_sk_dnstr != array[]::text[]
+      and a.barriers_ct_dv_rb_dnstr != array[]::text[]
+      and a.edge_type not in (1100, 1200, 1350, 1410, 1425, 1450)
+    then 'RESIDENT_FISH_ONLY_BARRIER_DNSTR'
+  end as fishyness_ser,
   geom
-from access;
+from access a
+left outer join psf.nuseds_top10 b
+on a.wscode = b.wscode::text;
 
 create index on psf.ccira using gist (geom);

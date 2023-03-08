@@ -7,7 +7,7 @@ Generate fish distribution and abundance models for PSF/CCIRA within provided st
 
 1. Determine BC Freshwater Atlas watershed groups present within the study area: `ATNA,BELA,KHTZ,KITL,KLIN,KTSU,LDEN,LRDO,NASC,NECL,NIEL,OWIK`
 
-2. Map provided PSE spawning data (Chinoo, Coho, Sockeye, Steelhead) 
+2. Map provided PSE spawning data (Chinoo, Coho, Sockeye, Steelhead)
 
 3. Where PSE spawning data were upstream of barriers present in `bcfishpass`, reference the spawning data to BC Freshwater Atlas stream network and load to `bcfishpass`, cancelling these downstream barriers
 
@@ -43,9 +43,8 @@ Generate fish distribution and abundance models for PSF/CCIRA within provided st
     - `FEW_SALMON`: magnitude < 5
     - `SOME_SALMON`: magnitude >= 5, < 40
     - `MANY_SALMON`: magnitude >= 40
+    - `MOST_SALMON`: where a stream is noted as a top ten producer in the NuSEDS data.
 
-    This classification was adjusted up one category for any stream listed as a top ten producer in the NuSEDS data.
-    
     #### Resident
 
     For streams modelled as inaccessible to salmon:
@@ -73,6 +72,54 @@ Install the following tools (for the March 2023 deliverable, the noted versions 
     - [resident](https://github.com/smnorris/bcfishpass/blob/main/model/access/sql/model_access_ct_dv_rb.sql)
     - [steelhead](https://github.com/smnorris/bcfishpass/blob/main/model/access/sql/model_access_st.sql)
 
-2. Apply the Gowgaia model and generate deliverables:
+2. Process NuSEDS, apply the Gowgaia model and generate deliverables:
 
         ./ccira.sh
+
+
+## Data definition
+
+| COLUMN NAME                 | TYPE                        | DESCRIPTION |
+| --------------------------- | --------------------------- | ----------- |
+| segmented_stream_id           | text                        | internal bcfishpass unique stream segment id
+| linear_feature_id             | bigint                      | FWA stream segment identifier
+| blue_line_key                 | integer                     | Uniquely identifies a single flow line such that a main channel and a secondary channel with the same watershed code would have different blue line keys (the Fraser River and all side channels have different blue line keys).
+| edge_type                     | integer                     | A 4 digit numeric code used by the Freshwater Atlas to identify the various types of water network linear features. eg. 1050.
+| downstream_route_measure      | double precision            | The distance, in meters, along the route from the mouth of the route to the feature.  This distance is measured from the mouth of the containing route to the downstream end of the feature.
+| upstream_route_measure        | double precision            | The distance, in meters, along the route from the mouth of the route to upstream end of the feature.  This distance is measured from the mouth of the containing route to the upstream end of the feature.
+| gnis_name                     | character varying(80)       | The BCGNIS  (BC Geographical Names Information System)  name associated with the GNIS feature id (an English name was used where available, otherwise another language was selected).
+| wscode                        | text                        | Abbreviated version of source FWA watershed code
+| localcode                     | text                        | Abbreviated version of source local watershed code
+| stream_order                  | integer                     | The calculated modified Strahler order.
+| stream_magnitude              | integer                     | The calculated magnitude.
+| upstream_area_ha              | double precision            | Area upstream of the stream(s) with the given local watershed code. NOTE - does not include the area of the watershed(s) in which the streams lie.
+| barriers_ch_cm_co_pk_sk_dnstr | text                        | Natural barriers to salmon downstream
+| barriers_ct_dv_rb_dnstr       | text                        | Natural barriers to cutthroat, dolly varden, rainbow downstream
+| obsrvtn_species_codes_upstr   | text                        | Species codes of known observations upstream (for species of interest only, within the same watershed group as stream)
+| species_codes_dnstr           | text                        | Species codes of known observations downstream (for species of interest only, within the same watershed group as stream)
+| model_ch                      | text                        | Fish distribution model for Chinoook (see above for method and codes)
+| model_cm                      | text                        | Fish distribution model for Chum (see above for method and codes)
+| model_co                      | text                        | Fish distribution model for Coho (see above for method and codes)
+| model_pk                      | text                        | Fish distribution model for Pink (see above for method and codes)
+| model_sk                      | text                        | Fish distribution model for Sockeye (see above for method and codes)
+| model_st                      | text                        | Fish distribution model for Steelhead (see above for method and codes)
+| model_ct                      | text                        | Fish distribution model for Cutthroat Trout (see above for method and codes)
+| model_dv                      | text                        | Fish distribution model for Dolly Varden Char (see above for method and codes)
+| model_rb                      | text                        | Fish distribution model for Rainbow Trout (see above for method and codes)
+| nuseds_top10_cm               | boolean                     | Identifies if stream is one of top 10 producers for study area for CM
+| nuseds_top10_cn               | boolean                     | Identifies if stream is one of top 10 producers for study area for CN
+| nuseds_top10_co               | boolean                     | Identifies if stream is one of top 10 producers for study area for CO
+| nuseds_top10_pke              | boolean                     | Identifies if stream is one of top 10 producers for study area for PKE
+| nuseds_top10_pko              | boolean                     | Identifies if stream is one of top 10 producers for study area for PKO
+| nuseds_top10_sel              | boolean                     | Identifies if stream is one of top 10 producers for study area for SEL
+| nuseds_top10_ser              | boolean                     | Identifies if stream is one of top 10 producers for study area for SER
+| fishyness_magnitude           | text                        | Fishyness index, magnitude based only (no `MOST_SALMON` class)
+| fishyness_salmon              | text                        | Fishyness index, salmon (all)
+| fishyness_cm                  | text                        | Fishyness index, CM
+| fishyness_cn                  | text                        | Fishyness index, CN
+| fishyness_co                  | text                        | Fishyness index, CO
+| fishyness_pke                 | text                        | Fishyness index, PKE
+| fishyness_pko                 | text                        | Fishyness index, PKO
+| fishyness_sel                 | text                        | Fishyness index, SEL
+| fishyness_ser                 | text                        | Fishyness index, SER
+| geom                          | geometry(LineStringZM,3005) | Stream segment geometry

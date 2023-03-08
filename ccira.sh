@@ -1,12 +1,30 @@
 #!/bin/bash
 set -euxo pipefail
 
-
+# ----
+# * NOTE *
+# ----
 # before running, run bcfishpass model for groups of interest, including the ct_dv_rb access model
+# ----
 
+DATABASE_URL=postgresql://postgres@localhost:5432/bcfp_test
+
+# load PSF provided nuseds data
+psql $DATABASE_URL -c "drop table if exists psf.nuseds"
+psql $DATABASE_URL -c "create table psf.nuseds (pop_id integer, spp text, gfe_id integer, sys_nm text, geom_mean double precision)"
+psql $DATABASE_URL -c "\copy psf.nuseds FROM data/nuseds.csv delimiter ',' csv header"
+
+# get nuseds - FWA lookup, load to pg
+curl https://open.canada.ca/data/en/datastore/dump/fc475853-b599-4e68-8d80-f49c03ddc01c?bom=True | shampoo | csvcut -c pop_id,fwa_watershed_cde > data/nuseds_sites.csv
+psql $DATABASE_URL -c "drop table if exists psf.nuseds_sites"
+psql $DATABASE_URL -c "create table psf.nuseds_sites (pop_id integer, fwa_watershed_cde text, wscode public.ltree generated always as ((replace(replace((fwa_watershed_cde)::text, '-000000'::text, ''::text), '-'::text, '.'::text))::public.ltree) stored)"
+psql $DATABASE_URL -c "\copy psf.nuseds_sites FROM data/nuseds_sites.csv delimiter ',' csv header"
+
+# find top ten producers per spp in nuseds data
+psql $DATABASE_URL -f sql/nuseds_top10.sql
 
 # create gowgaia classifcations
-psql -f sql/model.sql
+psql $DATABASE_URL -f sql/model.sql
 
 # dump to file
 mkdir -p outputs
