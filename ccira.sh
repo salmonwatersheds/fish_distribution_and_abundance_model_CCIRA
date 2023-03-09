@@ -137,4 +137,8 @@ ogr2ogr \
              life_stage,
              acat_report_url,
              geom
-           from bcfishpass.observations_vw"
+           from bcfishpass.observations_vw
+           where watershed_group_code in ('ATNA','BELA','KHTZ','KITL','KLIN','KTSU','LDEN','LRDO','NASC','NECL','NIEL','OWIK')"
+
+# zip
+cd outputs; zip -r ccira.gpkg.zip ccira.gpkg
