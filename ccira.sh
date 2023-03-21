@@ -26,6 +26,9 @@ psql $DATABASE_URL -f sql/nuseds_top10.sql
 # create gowgaia classifcations
 psql $DATABASE_URL -f sql/model.sql
 
+# what streams had abundance model upgraded by nuseds data?
+psql $DATABASE_URL --csv -f sql/upgraded_streams.sql > upgraded_streams.csv
+
 # dump to file
 rm -rf outputs
 mkdir outputs
@@ -140,8 +143,38 @@ ogr2ogr \
            from bcfishpass.observations_vw
            where watershed_group_code in ('ATNA','BELA','KHTZ','KITL','KLIN','KTSU','LDEN','LRDO','NASC','NECL','NIEL','OWIK')"
 
+echo 'dumping dams (all dams, not just barriers)'
+ogr2ogr \
+    -f GPKG \
+    -append \
+    -update \
+    outputs/ccira.gpkg \
+    PG:$DATABASE_URL \
+    -nln dams \
+    -nlt PointZM \
+    -sql "select
+             aggregated_crossings_id as dam_id,
+             barrier_status,
+             -- cabd attributes
+             dam_name,
+             dam_height,
+             dam_owner,
+             dam_use,
+             dam_operating_status,
+             linear_feature_id,
+             blue_line_key,
+             watershed_key,
+             downstream_route_measure,
+             wscode_ltree::text as wscode,
+             localcode_ltree::text as localcode,
+             watershed_group_code,
+             gnis_stream_name as gnis_name,
+             stream_order,
+             stream_magnitude,
+             geom
+          from bcfishpass.crossings
+          where watershed_group_code in ('ATNA','BELA','KHTZ','KITL','KLIN','KTSU','LDEN','LRDO','NASC','NECL','NIEL','OWIK')
+          and crossing_source = 'CABD'"
+
 # zip
 cd outputs; zip -r ccira.gpkg.zip ccira.gpkg
-
-# what streams had abundance model upgraded by nuseds data?
-psql $DATABASE_URL --csv -f sql/upgraded_streams.sql > upgraded_streams.csv

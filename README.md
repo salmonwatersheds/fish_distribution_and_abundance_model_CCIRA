@@ -134,6 +134,8 @@ Streams with abundance upgraded to `MOST_SALMON` based on NuSEDs productivity ra
 
 #### `barriers_salmon`/`barriers_steelhead`/`barriers_resident`
 
+Natural barriers to noted species.
+
 |           Column           |         Type         | Description |
 |----------------------------|----------------------|------------|
 | barriers_<species>_id | text                 | unique identifier           |
@@ -150,7 +152,33 @@ Streams with abundance upgraded to `MOST_SALMON` based on NuSEDs productivity ra
 | geom                       | geometry(Point,3005) | Geometry           |
 
 
-### observations
+#### `dams`
+
+All dams in study area, taken from [Canadian Aquatic Barrier Database (CABD)](https://cabd-docs.netlify.app/index.html), as documented [here](https://cabd-docs.netlify.app/docs_tech/docs_tech_arch_models.html)
+
+|          Column           |          Type          | Description                                                   |
+|---------------------------|------------------------|-----------                                                    |
+| dam_id                   | text                | Source CABD unique identifier              
+| barrier_status           | text                | Derived from CABD `passability_status_code`                    
+| dam_name                 | text                | CABD `dam_name_en`              
+| dam_height               | text                | CABD `dam_height_m`                
+| dam_owner                | text                | CABD `owner`               
+| dam_use                  | text                | CABD `dam_use`             
+| dam_operating_status     | text                | CABD `operating_status`                          
+| linear_feature_id        | integer             | See FWA documentation                          
+| blue_line_key            | integer             | See FWA documentation                      
+| watershed_key            | integer             | See FWA documentation                      
+| downstream_route_measure | double precision    | See FWA documentation                                          
+| wscode                   | text                | See FWA documentation            
+| localcode                | text                | See FWA documentation               
+| watershed_group_code     | text                | See FWA documentation                          
+| gnis_name                | text                | See FWA documentation               
+| stream_order             | integer             | See FWA documentation                     
+| stream_magnitude         | integer             | See FWA documentation                        
+| geom                     | geometry(Point,3005) | Geometry           |
+
+
+### `observations`
 
 From [Known Fish Observations](https://catalogue.data.gov.bc.ca/dataset/known-bc-fish-observations-and-bc-fish-distributions)
 
