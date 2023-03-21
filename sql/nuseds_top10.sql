@@ -26,27 +26,34 @@ wsc as (
    where s.watershed_group_code in ('ATNA','BELA','KHTZ','KITL','KLIN','KTSU','LDEN','LRDO','NASC','NECL','NIEL','OWIK')
 ),
 
--- link locations to filtered watershed codes and rank
-studyarea_ranked as (
-  select
+-- link locations to filtered watershed codes, filter out duplicate spp/watershed code combinations
+studyarea_distinct as (
+  select distinct on (spp, wscode)
     a.spp,
-    a.sys_nm,
     a.pop_id,
-    a.geom_mean,
     b.wscode,
-    rank() over (partition by a.spp order by a.geom_mean desc)
+    a.geom_mean
   from cleaned a
   inner join wsc b on a.pop_id = b.pop_id
+  order by spp, wscode, geom_mean desc
+),
+
+-- rank
+ranked as (
+  select
+    spp,
+    wscode,
+    rank() over (partition by spp order by geom_mean desc)
+  from studyarea_distinct
 ),
 
 -- pull only top 10
 top10 as (
   select
     spp,
-    sys_nm,
     rank,
     wscode
-  from studyarea_ranked
+  from ranked
   where rank <= 10
   order by spp, rank
 ),
@@ -54,7 +61,6 @@ top10 as (
 -- extract all distinct locations
 codes as (
 select distinct 
-  sys_nm,
   wscode
 from top10 
 order by wscode
@@ -62,7 +68,6 @@ order by wscode
 
 -- for each location, note which spp are top 10 (enabling simple join to spatial)
 select distinct
-  cd.sys_nm,
   cd.wscode,
   case when cm.spp is not null then true else null end as cm,
   case when cn.spp is not null then true else null end as cn,
