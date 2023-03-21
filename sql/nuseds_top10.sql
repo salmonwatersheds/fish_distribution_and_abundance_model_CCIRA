@@ -15,35 +15,38 @@ with cleaned as (
   order by spp, sys_nm, geom_mean desc
 ),
 
--- rank locations per species
-ranked as (
-  select
-    spp,
-    sys_nm,
-    pop_id,
-    geom_mean,
-    rank() over (partition by spp order by geom_mean desc)
-  from cleaned
-),
-
--- uniquify watershed code lookup
+-- uniquify watershed code lookup, retaining only watersheds in study area
 wsc as (
-  select distinct 
-    pop_id,
-    wscode
-   from psf.nuseds_sites
+  select distinct
+    a.pop_id,
+    a.wscode
+   from psf.nuseds_sites a
+   inner join whse_basemapping.fwa_stream_networks_sp s
+   on a.wscode = s.wscode_ltree
+   where s.watershed_group_code in ('ATNA','BELA','KHTZ','KITL','KLIN','KTSU','LDEN','LRDO','NASC','NECL','NIEL','OWIK')
 ),
 
--- pull only top 10, add watershed code
-top10 as (
+-- link locations to filtered watershed codes and rank
+studyarea_ranked as (
   select
     a.spp,
     a.sys_nm,
-    a.rank,
-    b.wscode
-  from ranked a
-  left outer join wsc b
-  on a.pop_id = b.pop_id
+    a.pop_id,
+    a.geom_mean,
+    b.wscode,
+    rank() over (partition by a.spp order by a.geom_mean desc)
+  from cleaned a
+  inner join wsc b on a.pop_id = b.pop_id
+),
+
+-- pull only top 10
+top10 as (
+  select
+    spp,
+    sys_nm,
+    rank,
+    wscode
+  from studyarea_ranked
   where rank <= 10
   order by spp, rank
 ),
@@ -51,13 +54,15 @@ top10 as (
 -- extract all distinct locations
 codes as (
 select distinct 
+  sys_nm,
   wscode
 from top10 
 order by wscode
 )
 
 -- for each location, note which spp are top 10 (enabling simple join to spatial)
-select 
+select distinct
+  cd.sys_nm,
   cd.wscode,
   case when cm.spp is not null then true else null end as cm,
   case when cn.spp is not null then true else null end as cn,
@@ -73,4 +78,4 @@ left join top10 co on cd.wscode = co.wscode and co.spp = 'CO'
 left join top10 pke on cd.wscode = pke.wscode and pke.spp = 'PKE'
 left join top10 pko on cd.wscode = pko.wscode and pko.spp = 'PKO'
 left join top10 sel on cd.wscode = sel.wscode and sel.spp = 'SEL'
-left join top10 ser on cd.wscode = ser.wscode and ser.spp = 'SER'
+left join top10 ser on cd.wscode = ser.wscode and ser.spp = 'SER';

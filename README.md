@@ -31,10 +31,16 @@ Generate fish distribution and abundance models for PSF/CCIRA within provided st
 
     - `KNOWN` fish presence: stream downstream of known observation(s) for given species
     - `INFERRED` fish presence: stream upstream of known observations and downstream of known/modelled barriers
-    - `POTENTIAL` resident fish presence: unsurveyed streams from stream mouth to first known/modelled barrier
-    - `POTENTIAL_BARRIER_DNSTR` all stream upstream of known/modelled barriers and not downstream of observations (an extension of the Gowgaia model in absence of an elevation cutoff threshold)
+    - `POTENTIAL` resident fish presence: unsurveyed streams from stream mouth to first known/modelled barrier and below the elevation of the highest observation of the species in the study area
+    - `POTENTIAL_BARRIER_DNSTR` all stream upstream of known/modelled barriers, not downstream of observations, and below the elevation of the highest observation of the species in the study area
 
-7. Extend the above fish accessibility model with an adaptation of the Gowgaia 'fishyness' classification:
+    Elevation maximums:
+
+    - `CT`: 1508m
+    - `DV`: 1005m
+    - `RB`: 1831m
+
+7. Extend the above fish accessibility model with an adaptation of the Gowgaia abundance classification:
 
     #### Anadromous
 
@@ -43,7 +49,7 @@ Generate fish distribution and abundance models for PSF/CCIRA within provided st
     - `FEW_SALMON`: magnitude < 5
     - `SOME_SALMON`: magnitude >= 5, < 40
     - `MANY_SALMON`: magnitude >= 40
-    - `MOST_SALMON`: where a stream is noted as a top ten producer in the NuSEDS data.
+    - `MOST_SALMON`: where a stream is noted as a top ten producer in the NuSEDS data for any given salmon species.
 
     #### Resident
 
@@ -83,7 +89,8 @@ Install the following tools (for the March 2023 deliverable, the noted versions 
 
 | Column                 | Type                        | Description |
 | --------------------------- | --------------------------- | ----------- |
-| segmented_stream_id           | text                        | internal bcfishpass unique stream segment id
+| ccira_id                      | integer                     | ccira model output unique identifier
+| segmented_stream_id           | text                        | bcfishpass unique stream segment id
 | linear_feature_id             | bigint                      | FWA stream segment identifier
 | blue_line_key                 | integer                     | Uniquely identifies a single flow line such that a main channel and a secondary channel with the same watershed code would have different blue line keys (the Fraser River and all side channels have different blue line keys).
 | edge_type                     | integer                     | A 4 digit numeric code used by the Freshwater Atlas to identify the various types of water network linear features. eg. 1050.
@@ -94,8 +101,10 @@ Install the following tools (for the March 2023 deliverable, the noted versions 
 | localcode                     | text                        | Abbreviated version of source local watershed code
 | stream_order                  | integer                     | The calculated modified Strahler order.
 | stream_magnitude              | integer                     | The calculated magnitude.
+| watershed_group_code          | text                        | The watershed group code associated with the stream.
 | upstream_area_ha              | double precision            | Area upstream of the stream(s) with the given local watershed code. NOTE - does not include the area of the watershed(s) in which the streams lie.
 | barriers_ch_cm_co_pk_sk_dnstr | text                        | Natural barriers to salmon downstream
+| barriers_dams_dnstr           | text                        | CABD dams noted as barriers downstream
 | barriers_ct_dv_rb_dnstr       | text                        | Natural barriers to cutthroat, dolly varden, rainbow downstream
 | obsrvtn_species_codes_upstr   | text                        | Species codes of known observations upstream (for species of interest only, within the same watershed group as stream)
 | species_codes_dnstr           | text                        | Species codes of known observations downstream (for species of interest only, within the same watershed group as stream)
@@ -115,15 +124,7 @@ Install the following tools (for the March 2023 deliverable, the noted versions 
 | nuseds_top10_pko              | boolean                     | Identifies if stream is one of top 10 producers for study area for PKO
 | nuseds_top10_sel              | boolean                     | Identifies if stream is one of top 10 producers for study area for SEL
 | nuseds_top10_ser              | boolean                     | Identifies if stream is one of top 10 producers for study area for SER
-| fishyness_magnitude           | text                        | Fishyness index, magnitude based only (no `MOST_SALMON` class)
-| fishyness_salmon              | text                        | Fishyness index, salmon (all)
-| fishyness_cm                  | text                        | Fishyness index, CM
-| fishyness_cn                  | text                        | Fishyness index, CN
-| fishyness_co                  | text                        | Fishyness index, CO
-| fishyness_pke                 | text                        | Fishyness index, PKE
-| fishyness_pko                 | text                        | Fishyness index, PKO
-| fishyness_sel                 | text                        | Fishyness index, SEL
-| fishyness_ser                 | text                        | Fishyness index, SER
+| abundance                     | text                        | Abundance/fishyness index - based on distribution model, magnitude, escapement
 | geom                          | geometry(LineStringZM,3005) | Stream segment geometry
 
 
