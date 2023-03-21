@@ -7,7 +7,7 @@ set -euxo pipefail
 # before running, run bcfishpass model for groups of interest, including the ct_dv_rb access model
 # ----
 
-DATABASE_URL=postgresql://postgres@localhost:5432/bcfp_test
+DATABASE_URL=postgresql://postgres@localhost:5432/bcfishpass
 
 # load PSF provided nuseds data
 psql $DATABASE_URL -c "drop table if exists psf.nuseds"
@@ -142,3 +142,6 @@ ogr2ogr \
 
 # zip
 cd outputs; zip -r ccira.gpkg.zip ccira.gpkg
+
+# what streams had abundance model upgraded by nuseds data?
+psql $DATABASE_URL --csv -f sql/upgraded_streams.sql > upgraded_streams.csv

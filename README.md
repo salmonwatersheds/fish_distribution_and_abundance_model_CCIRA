@@ -83,6 +83,9 @@ Install the following tools (for the March 2023 deliverable, the noted versions 
         ./ccira.sh
 
 
+Model output is dumped to `/outputs/ccira.gpkg.zip`
+Streams with abundance upgraded to `MOST_SALMON` based on NuSEDs productivity ranking (and their original, magnitude based abundance values) are noted in [upgraded_streams.csv](upgraded_streams.csv)
+
 ## Data definitions
 
 #### `fish_distribution_model`
