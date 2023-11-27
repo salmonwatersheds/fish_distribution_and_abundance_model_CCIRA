@@ -63,16 +63,16 @@ Generate fish distribution and abundance models for PSF/CCIRA within provided st
 
 ## Setup
 
-Install the following tools (for the March 2023 deliverable, the noted versions were used):
+Install the following tools (for the August 2023 deliverable, the noted versions were used):
 
-- [`fwapg`](https://github.com/smnorris/fwapg) : [v0.3.1](https://github.com/smnorris/fwapg/archive/refs/tags/v0.3.1.zip)
-- [`bcfishobs`](https://github.com/smnorris/bcfishobs) : [v0.1.0](https://github.com/smnorris/bcfishobs/archive/refs/tags/v0.1.0.zip)
-- [`bcfishpass`](https://github.com/smnorris/bcfishpass) : [v0.1.dev2]()
+- [`fwapg`](https://github.com/smnorris/fwapg) : [v0.5.1]
+- [`bcfishobs`](https://github.com/smnorris/bcfishobs) : [v0.1.3]
+- [`bcfishpass`](https://github.com/smnorris/bcfishpass) : [v0.1.dev5]()
 
 
 ## Run scripts
 
-1. Build the `bcfishpass` database and generate these access models to the above noted watershed groups (see instructions in `bcfishpass`):
+1. Build the `bcfishpass` database using the [CCIRA parameters](https://github.com/smnorris/bcfishpass/tree/main/parameters/example_ccira) and generate these access models for the above noted watershed groups (see instructions in `bcfishpass`):
 
     - [salmon](https://github.com/smnorris/bcfishpass/blob/main/model/access/sql/model_access_ch_cm_co_pk_sk.sql)
     - [resident](https://github.com/smnorris/bcfishpass/blob/main/model/access/sql/model_access_ct_dv_rb.sql)

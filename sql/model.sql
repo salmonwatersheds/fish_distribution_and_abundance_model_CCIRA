@@ -3,7 +3,101 @@ drop table if exists psf.ccira;
 
 create table psf.ccira as
 
-with streams as (
+-- identify watershed codes of systems containing sockeye
+-- (sockeye lakes and known sockeye spawning streams)
+-- lakes
+with sk_lakes as (
+  select distinct on (a.waterbody_poly_id)
+    a.waterbody_poly_id,
+    s.wscode_ltree,
+    s.localcode_ltree
+  from bcfishpass.dfo_known_sockeye_lakes a
+  inner join whse_basemapping.fwa_lakes_poly l
+  on a.waterbody_poly_id = l.waterbody_poly_id
+  inner join bcfishpass.streams s
+  on l.waterbody_key = s.waterbody_key
+  order by a.waterbody_poly_id, s.wscode_ltree, s.localcode_ltree
+),
+
+-- tribs to Kwakwa Lake
+-- (the lake does not exist in FWA)
+-- manually add all watershed codes draining into the lagoon/lake
+kwakwa as
+(
+  select distinct on (blue_line_key)
+    blue_line_key,
+    wscode_ltree,
+    localcode_ltree
+  from whse_basemapping.fwa_stream_networks_sp
+  where blue_line_key in (
+    360256405,
+    360707969,
+    360740205,
+    360870394,
+    360771634,
+    360684689,
+    360686504,
+    360268244,
+    360822784,
+    360874324
+  )
+  order by blue_line_key, wscode_ltree, localcode_ltree
+),
+
+-- streams
+sk_linear as (
+  select
+  blue_line_key,
+  min(downstream_route_measure) as downstream_route_measure
+  from bcfishpass.user_habitat_classification
+  where species_code = 'SK'
+  group by blue_line_key
+),
+
+-- combine lakes/streams
+sk_wsc as (
+  select
+    s.wscode_ltree,
+    s.localcode_ltree
+  from bcfishpass.streams s
+  inner join sk_linear skl
+  on s.blue_line_key = skl.blue_line_key
+  and round(skl.downstream_route_measure::numeric, 4) >= round(s.downstream_route_measure::numeric,4)
+  and round(skl.downstream_route_measure::numeric) < round(s.upstream_route_measure::numeric, 4)
+  union
+  select
+    wscode_ltree,
+    localcode_ltree
+  from sk_lakes
+  union
+  select
+    wscode_ltree,
+    localcode_ltree
+  from kwakwa
+),
+
+-- downstream trace
+wsc_below_sk_lakes as (
+  select distinct
+    s.wscode_ltree
+  from sk_wsc sk
+  inner join bcfishpass.streams s
+  on fwa_downstream(sk.wscode_ltree, sk.localcode_ltree, s.wscode_ltree, s.localcode_ltree)
+  or sk.wscode_ltree = s.wscode_ltree -- fwa_downstream does not include equivalent codes
+),
+
+-- all streams with same wscode prefix are eligible for sk model
+potential_sockeye_streams as
+(
+  select distinct on (s.segmented_stream_id)
+    s.segmented_stream_id,
+    true as sk_presence
+    from bcfishpass.streams s
+  inner join wsc_below_sk_lakes sk on sk.wscode_ltree @> s.wscode_ltree
+  order by segmented_stream_id, sk.wscode_ltree
+),
+
+streams as (
   select
     s.segmented_stream_id,
     s.linear_feature_id,
@@ -15,8 +109,8 @@ with streams as (
     s.stream_magnitude,
     s.watershed_group_code,
     s.gnis_name,
-    s.wscode_ltree::text as wscode,
-    s.localcode_ltree::text as localcode,
+    s.wscode_ltree,
+    s.localcode_ltree,
     s.barriers_ch_cm_co_pk_sk_dnstr,
     s.barriers_dams_dnstr,
     s.barriers_ct_dv_rb_dnstr,
@@ -45,8 +139,8 @@ with streams as (
     s.stream_magnitude,
     s.watershed_group_code,
     s.gnis_name,
-    s.wscode_ltree::text as wscode,
-    s.localcode_ltree::text as localcode,
+    s.wscode_ltree,
+    s.localcode_ltree,
     s.barriers_ch_cm_co_pk_sk_dnstr,
     s.barriers_dams_dnstr,
     s.barriers_ct_dv_rb_dnstr,
@@ -75,8 +169,8 @@ with streams as (
     s.stream_magnitude,
     s.watershed_group_code,
     s.gnis_name,
-    s.wscode_ltree::text as wscode,
-    s.localcode_ltree::text as localcode,
+    s.wscode_ltree,
+    s.localcode_ltree,
     s.barriers_ch_cm_co_pk_sk_dnstr,
     s.barriers_dams_dnstr,
     s.barriers_ct_dv_rb_dnstr,
@@ -108,8 +202,8 @@ access as (
     ua.upstream_area_ha,
     s.watershed_group_code,
     s.gnis_name,
-    s.wscode,
-    s.localcode,
+    s.wscode_ltree,
+    s.localcode_ltree,
     s.barriers_ch_cm_co_pk_sk_dnstr,
     s.barriers_dams_dnstr,
     s.barriers_ct_dv_rb_dnstr,
@@ -165,17 +259,22 @@ access as (
         barriers_ch_cm_co_pk_sk_dnstr = array[]::text[] and
         barriers_dams_dnstr is null then 'POTENTIAL'
     end as model_pk,
-    case 
+    case
     when obsrvtn_species_codes_upstr && array['SK'] and
-        barriers_dams_dnstr is null then 'KNOWN'
+        barriers_dams_dnstr is null and
+        -- apply sk model only in systems with sockeye lakes present
+        sk.sk_presence is true then 'KNOWN'
     when obsrvtn_species_codes_upstr && array['SK'] is false and  
         species_codes_dnstr && array['SK'] and
         barriers_ch_cm_co_pk_sk_dnstr = array[]::text[] and
-        barriers_dams_dnstr is null then 'INFERRED'
+        barriers_dams_dnstr is null and
+        -- apply sk model only in systems with sockeye lakes present
+        sk.sk_presence is true then 'INFERRED'
     when obsrvtn_species_codes_upstr && array['SK'] is false and  
         species_codes_dnstr && array['SK'] is false and
         barriers_ch_cm_co_pk_sk_dnstr = array[]::text[] and
-        barriers_dams_dnstr is null then 'POTENTIAL'
+        barriers_dams_dnstr is null and
+        sk.sk_presence is true then 'POTENTIAL'
     end as model_sk,
     case 
     when obsrvtn_species_codes_upstr && array['ST'] and
@@ -263,6 +362,8 @@ access as (
   ON s.linear_feature_id = l.linear_feature_id
   INNER JOIN whse_basemapping.fwa_watersheds_upstream_area ua
   ON l.watershed_feature_id = ua.watershed_feature_id
+  left outer join potential_sockeye_streams sk
+  on s.segmented_stream_id = sk.segmented_stream_id
   where st_geometrytype(geom) = 'ST_LineString' -- remove any points created by imprecision of st_locatebetweenelevations()
 )
 
@@ -276,8 +377,8 @@ select
   a.downstream_route_measure,
   a.upstream_route_measure,
   a.gnis_name,
-  a.wscode,
-  a.localcode,
+  a.wscode_ltree::text as wscode,
+  a.localcode_ltree::text as localcode,
   a.stream_order,
   a.stream_magnitude,
   a.watershed_group_code,
@@ -325,7 +426,7 @@ select
   geom
 from access a
 left outer join psf.nuseds_top10 b
-on a.wscode = b.wscode::text;
+on a.wscode_ltree = b.wscode;
 
 -- apply most salmon based on nuseds info
 update psf.ccira
