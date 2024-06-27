@@ -10,6 +10,7 @@ set -euxo pipefail
 DATABASE_URL=postgresql://postgres@localhost:5432/bcfishpass_dev
 
 # load PSF provided nuseds data
+psql $DATABASE_URL -c "create schema if not exists psf"
 psql $DATABASE_URL -c "drop table if exists psf.nuseds"
 psql $DATABASE_URL -c "create table psf.nuseds (pop_id integer, spp text, gfe_id integer, sys_nm text, geom_mean double precision)"
 psql $DATABASE_URL -c "\copy psf.nuseds FROM data/nuseds.csv delimiter ',' csv header"

@@ -1,6 +1,6 @@
 # CCIRA project
 
-Generate fish distribution and abundance models for PSF/CCIRA within provided study area, in support of salmon restoration work by Heiltsuk, Kitasoo Xai’xais, and Nuxalk, and Wuikinuxv Nations.
+Coordinated by the Pacific Salmon Foundation in support of salmon restoration work by Heiltsuk, Kitasoo Xai’xais, Nuxalk, and Wuikinuxv Nations, these scripts adopt fish distribution / abundance models developed for the Haida Gwaii by [Gowgaia (2009)](https://salmonwatersheds.ca/document/lib_465/) to the CCIRA study area using current tools, methods and data.
 
 
 ## Method
@@ -13,7 +13,7 @@ Generate fish distribution and abundance models for PSF/CCIRA within provided st
 
 4. Perform basic QA checks of observations and barriers present in study area from all sources
 
-5. Generate three `bcfishpass` access models using these barrier assumptions:
+5. Generate three [`bcfishpass` access models](https://smnorris.github.io/bcfishpass/02_model_access.html) using these natural barrier assumptions:
 
     - Salmon (CH/CM/CO/PK/SK): falls >5m, subsurface flow, 15% gradient for >= 100m
     - Steelhead (ST): falls >5m, subsurface flow, 20% gradient for >= 100m
@@ -44,12 +44,12 @@ Generate fish distribution and abundance models for PSF/CCIRA within provided st
 
     #### Anadromous
 
-    For all `KNOWN`,`INFERRED`,`POTENTIAL` streams:
+    For all `KNOWN`,`INFERRED`,`POTENTIAL` streams, classify as follows:
 
     - `FEW_SALMON`: magnitude < 5
     - `SOME_SALMON`: magnitude >= 5, < 40
     - `MANY_SALMON`: magnitude >= 40
-    - `MOST_SALMON`: where a stream is noted as a top ten producer in the NuSEDS data for any given salmon species.
+    - `MOST_SALMON`: where a stream is noted as a top ten producer in the NuSEDS data for any given salmon species
 
     #### Resident
 
@@ -63,11 +63,11 @@ Generate fish distribution and abundance models for PSF/CCIRA within provided st
 
 ## Setup
 
-Install the following tools (for the August 2023 deliverable, the noted versions were used):
+Install the following tools (for the August 2023 deliverable, the noted versions were used - scripts may have to be adjusted if running with the latest dependencies):
 
 - [`fwapg`](https://github.com/smnorris/fwapg) : [v0.5.1]
 - [`bcfishobs`](https://github.com/smnorris/bcfishobs) : [v0.1.3]
-- [`bcfishpass`](https://github.com/smnorris/bcfishpass) : [v0.1.dev5]()
+- [`bcfishpass`](https://github.com/smnorris/bcfishpass) : [v0.1.dev5]
 
 
 ## Run scripts
