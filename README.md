@@ -7,19 +7,17 @@ Coordinated by the Pacific Salmon Foundation in support of salmon restoration wo
 
 1. Determine BC Freshwater Atlas watershed groups present within the study area: `ATNA,BELA,KHTZ,KITL,KLIN,KTSU,LDEN,LRDO,NASC,NECL,NIEL,OWIK`
 
-2. Map provided PSE spawning data (Chinoo, Coho, Sockeye, Steelhead)
+2. Reference Pacific Salmon Explorer known spawning streams to BC Freshwater Atlas stream network and load to `bcfishpass`, discarding modelled natural barriers downstream of known habitat
 
-3. Where PSE spawning data were upstream of barriers present in `bcfishpass`, reference the spawning data to BC Freshwater Atlas stream network and load to `bcfishpass`, cancelling these downstream barriers
+3. Perform basic QA checks of observations and barriers present in study area from all sources
 
-4. Perform basic QA checks of observations and barriers present in study area from all sources
-
-5. Generate three [`bcfishpass` access models](https://smnorris.github.io/bcfishpass/02_model_access.html) using these natural barrier assumptions:
+4. Generate three [`bcfishpass` access models](https://smnorris.github.io/bcfishpass/02_model_access.html) using these natural barrier assumptions:
 
     - Salmon (CH/CM/CO/PK/SK): falls >5m, subsurface flow, 15% gradient for >= 100m
     - Steelhead (ST): falls >5m, subsurface flow, 20% gradient for >= 100m
     - Resident (CT/DV/RB): falls >5m, subsurface flow, 25% gradient for >= 100m
 
-6. Extend the `bcfishpass` accessibility model with the Gowgaia stream classifications:
+5. Extend the `bcfishpass` accessibility model with the Gowgaia stream classifications:
 
     #### Anadromous (CH/CM/CO/PK/SK)
 
@@ -40,7 +38,7 @@ Coordinated by the Pacific Salmon Foundation in support of salmon restoration wo
     - `DV`: 1005m
     - `RB`: 1831m
 
-7. Extend the above fish accessibility model with an adaptation of the Gowgaia abundance classification:
+6. Extend the above fish accessibility model with an adaptation of the Gowgaia abundance classification:
 
     #### Anadromous
 
