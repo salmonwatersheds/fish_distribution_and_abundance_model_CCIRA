@@ -178,7 +178,7 @@ All dams in study area, taken from [Canadian Aquatic Barrier Database (CABD)](ht
 
 ### `observations`
 
-From [Known Fish Observations](https://catalogue.data.gov.bc.ca/dataset/known-bc-fish-observations-and-bc-fish-distributions)
+From [Known Fish Observations](https://catalogue.data.gov.bc.ca/dataset/known-bc-fish-observations-and-bc-fish-distributions) via [bcfishobs](https://github.com/smnorris/bcfishobs)
 
 |          Column           |          Type          | Description                                                   |
 |---------------------------|------------------------|-----------                                                    |
