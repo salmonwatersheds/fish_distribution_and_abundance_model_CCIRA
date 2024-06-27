@@ -1,6 +1,6 @@
 # CCIRA project
 
-Coordinated by the Pacific Salmon Foundation in support of salmon restoration work by Heiltsuk, Kitasoo Xai’xais, Nuxalk, and Wuikinuxv Nations, these scripts adopt fish distribution / abundance models developed for the Haida Gwaii by [Gowgaia (2009)](https://salmonwatersheds.ca/document/lib_465/) to the CCIRA study area using current tools, methods and data.
+Coordinated by the Pacific Salmon Foundation in support of salmon restoration work by Heiltsuk, Kitasoo Xai’xais, Nuxalk, and Wuikinuxv Nations, these scripts adapt fish distribution / abundance models developed for the Haida Gwaii by [Gowgaia (2009)](https://salmonwatersheds.ca/document/lib_465/) to the CCIRA study area using current tools, methods and data.
 
 
 ## Method
