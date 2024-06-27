@@ -86,6 +86,20 @@ Streams with abundance upgraded to `MOST_SALMON` based on NuSEDs productivity ra
 
 ## Data definitions
 
+Note that the salmon species codes used by `bcfishpass` and PSF/NuSEDs (and in these outputs) do not quite match.  
+BC fish observations and bcfishpass models do not distinguish between even/odd Pink or lake/river Sockeye.
+
+| species | BC/bcfishpass | PSF/NuSEDS |
+|---------|---------------|------------|
+| Chinook | `CH`          | `CN`       |
+| Chum    | `CM`          | `CM`       |
+| Coho    | `CO`          | `CO`       |
+| Pink (even) | `PK`      | `PKE`      |
+| Pink (odd)  | `PK`      | `PKO`      |
+| Sockeye (lake) | `SK`   | `SEL`      |
+| Sockeye (river) | `SK`   | `SEL`     |
+
+
 #### `fish_distribution_model`
 
 | Column                 | Type                        | Description |
