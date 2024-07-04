@@ -49,6 +49,9 @@ Coordinated by the Pacific Salmon Foundation in support of salmon restoration wo
     - `MANY_SALMON`: magnitude >= 40
     - `MOST_SALMON`: where a stream is noted as a top ten producer in the NuSEDS data for any given salmon species
 
+    NuSEDS top ten producers were identified based on the `MAX_ESTIMATE` field (removing zeros) by `POP_ID`. 
+    The geometric mean of `MAX_ESTIMATE` for each `POP_ID` was used and then ranked from high to low by species.
+
     #### Resident
 
     For streams modelled as inaccessible to salmon:
