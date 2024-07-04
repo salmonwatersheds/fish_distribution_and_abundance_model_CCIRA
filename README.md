@@ -47,10 +47,9 @@ Coordinated by the Pacific Salmon Foundation in support of salmon restoration wo
     - `FEW_SALMON`: magnitude < 5
     - `SOME_SALMON`: magnitude >= 5, < 40
     - `MANY_SALMON`: magnitude >= 40
-    - `MOST_SALMON`: where a stream is noted as a top ten producer in the NuSEDS data for any given salmon species
+    - `MOST_SALMON`: where a stream is noted as a top ten producer (as documented below)
 
-    NuSEDS top ten producers were identified based on the `MAX_ESTIMATE` field (removing zeros) by `POP_ID`. 
-    The geometric mean of `MAX_ESTIMATE` for each `POP_ID` was used and then ranked from high to low by species.
+    Top 10 producer streams in the CCIRA study area were derived from the New Salmon Escapement Database System ([NuSEDS](https://open.canada.ca/data/dataset/c48669a3-045b-400d-b730-48aafe8c5ee6)) using the `MAX_ESTIMATE` field (removing zeros) for each `POP_ID` for the period 1954-2021 (as per Central Coast escapement estimate guidance in [English et al. 2016](https://salmonwatersheds.ca/document/lib_435/)). The geometric mean of `MAX_ESTIMATE` for each `POP_ID` was then ranked from high to low by seven salmon species/populations (Chinook, Coho, Pink even, Pink odd, Chum, Sockeye lake, Sockeye river). NuSEDS data for steelhead over this period was too sparse to define data-driven estimates of abundance to override stream magnitude-based estimates of steelhead population abundance.
 
     #### Resident
 
