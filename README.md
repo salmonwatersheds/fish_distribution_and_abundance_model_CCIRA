@@ -3,7 +3,7 @@
 Coordinated by the Pacific Salmon Foundation in support of salmon restoration work by Heiltsuk, Kitasoo Xai’xais, Nuxalk, and Wuikinuxv Nations, these scripts adapt fish distribution / abundance models developed for the Haida Gwaii by [Gowgaia (2009)](https://salmonwatersheds.ca/document/lib_465/) to the CCIRA study area using current tools, methods and data.
 
 
-## Method
+## Data prep
 
 1. Determine BC Freshwater Atlas watershed groups present within the study area: `ATNA,BELA,KHTZ,KITL,KLIN,KTSU,LDEN,LRDO,NASC,NECL,NIEL,OWIK`
 
@@ -11,13 +11,15 @@ Coordinated by the Pacific Salmon Foundation in support of salmon restoration wo
 
 3. Perform basic QA checks of observations and barriers present in study area from all sources
 
-4. Generate three [`bcfishpass` access models](https://smnorris.github.io/bcfishpass/02_model_access.html) using these natural barrier assumptions:
+## Model method
+
+1. Generate three [`bcfishpass` access models](https://smnorris.github.io/bcfishpass/02_model_access.html) using these natural barrier assumptions:
 
     - Salmon (CH/CM/CO/PK/SK): falls >5m, subsurface flow, 15% gradient for >= 100m
     - Steelhead (ST): falls >5m, subsurface flow, 20% gradient for >= 100m
     - Resident (CT/DV/RB): falls >5m, subsurface flow, 25% gradient for >= 100m
 
-5. Extend the `bcfishpass` accessibility model with the Gowgaia stream classifications:
+2. Extend the `bcfishpass` accessibility model with the Gowgaia stream classifications:
 
     #### Anadromous (CH/CM/CO/PK/SK)
 
@@ -38,7 +40,7 @@ Coordinated by the Pacific Salmon Foundation in support of salmon restoration wo
     - `DV`: 1005m
     - `RB`: 1831m
 
-6. Extend the above fish accessibility model with an adaptation of the Gowgaia abundance classification:
+3. Extend the above fish accessibility model with an adaptation of the Gowgaia abundance classification:
 
     #### Anadromous
 
@@ -63,12 +65,13 @@ Coordinated by the Pacific Salmon Foundation in support of salmon restoration wo
 
 ## Setup
 
-Install the following tools (for the August 2023 deliverable, the noted versions were used - scripts may have to be adjusted if running with the latest dependencies):
+Install the following tools (for the August 2023 deliverable, the noted versions were used:
 
 - [`fwapg`](https://github.com/smnorris/fwapg) : [v0.5.1]
 - [`bcfishobs`](https://github.com/smnorris/bcfishobs) : [v0.1.3]
 - [`bcfishpass`](https://github.com/smnorris/bcfishpass) : [v0.1.dev5]
 
+Note: Scripts will require minor adjustments if re-running with the latest bcfishpass models.
 
 ## Run scripts
 
