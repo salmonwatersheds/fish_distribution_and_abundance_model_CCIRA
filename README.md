@@ -11,6 +11,8 @@ Coordinated by the Pacific Salmon Foundation in support of salmon restoration wo
 
 3. Perform basic QA checks of observations and barriers present in study area from all sources
 
+4. Download NuSEDS [`Conservation_Unit_System_Sites.csv`](https://api-proxy.edh.azure.cloud.dfo-mpo.gc.ca/catalogue/records/c48669a3-045b-400d-b730-48aafe8c5ee6/attachments/conservation_unit_system_sites.csv) (linking NuSEDS to FWA streams), discarding all columns other than `pop_id` and `fwa_watershed_cde` and saving as `data/nuseds_sites.csv`
+
 ## Model method
 
 1. Generate three [`bcfishpass` access models](https://smnorris.github.io/bcfishpass/02_model_access.html) using these natural barrier assumptions:

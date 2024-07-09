@@ -16,8 +16,6 @@ psql $DATABASE_URL -c "create table psf.nuseds (pop_id integer, spp text, gfe_id
 psql $DATABASE_URL -c "\copy psf.nuseds FROM data/nuseds.csv delimiter ',' csv header"
 
 # get nuseds - FWA lookup, load to pg
-# url no longer valid, use cached data
-#curl https://open.canada.ca/data/en/datastore/dump/fc475853-b599-4e68-8d80-f49c03ddc01c?bom=True | shampoo | csvcut -c pop_id,fwa_watershed_cde > data/nuseds_sites.csv
 psql $DATABASE_URL -c "drop table if exists psf.nuseds_sites"
 psql $DATABASE_URL -c "create table psf.nuseds_sites (pop_id integer, fwa_watershed_cde text, wscode public.ltree generated always as ((replace(replace((fwa_watershed_cde)::text, '-000000'::text, ''::text), '-'::text, '.'::text))::public.ltree) stored)"
 psql $DATABASE_URL -c "\copy psf.nuseds_sites FROM data/nuseds_sites.csv delimiter ',' csv header"
